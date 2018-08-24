@@ -43,7 +43,8 @@
 #include <gtsam/nonlinear/Values.h>
 
 #include <gtsam/nonlinear/ISAM2.h>
-
+//Tianning
+#include <std_srvs/Empty.h>
 using namespace gtsam;
 
 class mapOptimization{
@@ -65,6 +66,8 @@ private:
     ros::Publisher pubLaserCloudSurround;
     ros::Publisher pubOdomAftMapped;
     ros::Publisher pubKeyPoses;
+    //Tianning record key poses 6D service;
+    ros::ServiceServer recordKeyPoses6D_service;
 
     ros::Publisher pubHistoryKeyFrames;
     ros::Publisher pubIcpKeyFrames;
@@ -233,6 +236,9 @@ public:
         pubKeyPoses = nh.advertise<sensor_msgs::PointCloud2>("/key_pose_origin", 2);
         pubLaserCloudSurround = nh.advertise<sensor_msgs::PointCloud2>("/laser_cloud_surround", 2);
         pubOdomAftMapped = nh.advertise<nav_msgs::Odometry> ("/aft_mapped_to_init", 5);
+
+ //Tianning: publish 6D key frame poses
+        recordKeyPoses6D_service = nh.advertiseService("/record_key_pose_6D",&mapOptimization::recordKeyPoses6DServiceCall,this);
 
         subLaserCloudCornerLast = nh.subscribe<sensor_msgs::PointCloud2>("/laser_cloud_corner_last", 2, &mapOptimization::laserCloudCornerLastHandler, this);
         subLaserCloudSurfLast = nh.subscribe<sensor_msgs::PointCloud2>("/laser_cloud_surf_last", 2, &mapOptimization::laserCloudSurfLastHandler, this);
@@ -692,6 +698,34 @@ public:
             cloudMsgTemp.header.frame_id = "/camera_init";
             pubRecentKeyFrames.publish(cloudMsgTemp);
         }
+    }
+
+    //Tianning: record 6D pose frame
+    bool recordKeyPoses6DServiceCall(std_srvs::Empty::Request& req,
+                                     std_srvs::Empty::Response& res){
+        if(cloudKeyPoses6D->points.size() <= 1){
+            return false;
+        }
+
+        std::string filepath= "/tmp/leGOLOAM/pose6D.txt";
+        std::ofstream file;
+        file.open(filepath);
+        for(int i=0 ; i < cloudKeyPoses6D->points.size();i++){
+            file<<ros::Time().fromSec(cloudKeyPoses6D->points[i].time)<<' '<<
+            cloudKeyPoses6D->points[i].x<<' '<<
+            cloudKeyPoses6D->points[i].y<<' '<<
+            cloudKeyPoses6D->points[i].z<<' '<<
+            cloudKeyPoses6D->points[i].roll<<' '<<
+            cloudKeyPoses6D->points[i].pitch<<' '<<
+            cloudKeyPoses6D->points[i].yaw<<endl;
+
+        }
+        file.close();
+
+
+        return true;
+
+
     }
 
     void visualizeGlobalMapThread(){
