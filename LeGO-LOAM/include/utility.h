@@ -58,7 +58,7 @@ extern const float ang_bottom = 15.0+0.1;
 extern const int groundScanInd = 7;
 
 extern const bool loopClosureEnableFlag = true;
-extern const double mappingProcessInterval = 0.3;
+extern const double mappingProcessInterval = 0.01;//0.3
 
 extern const float scanPeriod = 0.1;
 extern const int systemDelay = 0;
@@ -88,7 +88,7 @@ extern const float historyKeyframeSearchRadius = 5.0;
 extern const int   historyKeyframeSearchNum = 25;
 extern const float historyKeyframeFitnessScore = 0.3;
 
-extern const float globalMapVisualizationSearchRadius = 50.0;
+extern const float globalMapVisualizationSearchRadius = 500.0;
 
 
 struct smoothness_t{ 

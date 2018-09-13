@@ -41,7 +41,9 @@ private:
     ros::Publisher pubLaserOdometry2;
     ros::Subscriber subLaserOdometry;
     ros::Subscriber subOdomAftMapped;
-  
+
+    tf::TransformBroadcaster pub2SegmapperBroadcaster;
+    tf::StampedTransform laserOdometry2Segmapper;
 
     nav_msgs::Odometry laserOdometry2;
     tf::StampedTransform laserOdometryTrans2;
@@ -68,6 +70,10 @@ public:
         pubLaserOdometry2 = nh.advertise<nav_msgs::Odometry> ("/integrated_to_init", 5);
         subLaserOdometry = nh.subscribe<nav_msgs::Odometry>("/laser_odom_to_init", 5, &TransformFusion::laserOdometryHandler, this);
         subOdomAftMapped = nh.subscribe<nav_msgs::Odometry>("/aft_mapped_to_init", 5, &TransformFusion::odomAftMappedHandler, this);
+
+        laserOdometry2Segmapper.frame_id_ = "world";
+        laserOdometry2Segmapper.child_frame_id_ = "imu";
+
 
         laserOdometry2.header.frame_id = "/camera_init";
         laserOdometry2.child_frame_id = "/camera";
@@ -213,6 +219,12 @@ public:
         laserOdometryTrans2.setRotation(tf::Quaternion(-geoQuat.y, -geoQuat.z, geoQuat.x, geoQuat.w));
         laserOdometryTrans2.setOrigin(tf::Vector3(transformMapped[3], transformMapped[4], transformMapped[5]));
         tfBroadcaster2.sendTransform(laserOdometryTrans2);
+
+
+        laserOdometry2Segmapper.stamp_ = laserOdometry->header.stamp;
+        laserOdometry2Segmapper.setRotation(tf::Quaternion(-geoQuat.y, -geoQuat.z, geoQuat.x, geoQuat.w));
+        laserOdometry2Segmapper.setOrigin(tf::Vector3(transformMapped[3], transformMapped[4], transformMapped[5]));
+        pub2SegmapperBroadcaster.sendTransform(laserOdometry2Segmapper);
     }
 
     void odomAftMappedHandler(const nav_msgs::Odometry::ConstPtr& odomAftMapped)

@@ -631,6 +631,7 @@ public:
 
     void laserOdometryHandler(const nav_msgs::Odometry::ConstPtr& laserOdometry){
         timeLaserOdometry = laserOdometry->header.stamp.toSec();
+        // ROS_INFO("new laser time: %f",timeLaserOdometry);
         double roll, pitch, yaw;
         geometry_msgs::Quaternion geoQuat = laserOdometry->pose.pose.orientation;
         tf::Matrix3x3(tf::Quaternion(geoQuat.z, -geoQuat.x, -geoQuat.y, geoQuat.w)).getRPY(roll, pitch, yaw);
@@ -707,7 +708,7 @@ public:
             return false;
         }
 
-        std::string filepath= "/tmp/leGOLOAM/pose6D.txt";
+        std::string filepath= "/tmp/pose6D.txt";
         std::ofstream file;
         file.open(filepath);
         for(int i=0 ; i < cloudKeyPoses6D->points.size();i++){
@@ -1454,6 +1455,7 @@ public:
             newLaserCloudOutlierLast && std::abs(timeLaserCloudOutlierLast - timeLaserOdometry) < 0.005 &&
             newLaserOdometry)
         {
+            // ROS_INFO("time lidar: %f",timeLaserOdometry);
 
             newLaserCloudCornerLast = false; newLaserCloudSurfLast = false; newLaserCloudOutlierLast = false; newLaserOdometry = false;
 
@@ -1462,7 +1464,6 @@ public:
             if (timeLaserOdometry - timeLastProcessing >= mappingProcessInterval) {
 
                 timeLastProcessing = timeLaserOdometry;
-
                 transformAssociateToMap();
 
                 extractSurroundingKeyFrames();
